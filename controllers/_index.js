@@ -1,7 +1,6 @@
-const memberController = require("./memberController");
+const adminController = require("./adminController");
 const authController = require("./authController");
 const configurationController = require("./configurationController");
-const employeeController = require("./employeeController");
 const enquiryController = require("./enquiryController");
 const jobQueueController = require("./jobQueueController");
 const blogCategoryController = require("./blogCategoryController");
@@ -13,10 +12,9 @@ const enquiryStatusController = require("./enquiryStatusController");
 const enquiryCategoryController = require("./enquiryCategoryController");
 
 module.exports = {
-  memberController,
+  adminController,
   authController,
   configurationController,
-  employeeController,
   enquiryController,
   jobQueueController,
   blogCategoryController,

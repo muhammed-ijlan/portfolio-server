@@ -20,17 +20,11 @@ const memberSignInValidator = [
 ];
 
 
-router.post("/member/register/super", superAdminSignupValidator, authController.registerSuperAdmin);
+router.post("/register/super", superAdminSignupValidator, authController.registerSuperAdmin);
 
 router.post("/member/login", memberSignInValidator, authController.loginMember);
 
 router.post("/member/logout", verifyAdmin, authController.logOutMember);
-
-
-
-
-
-
 
 
 

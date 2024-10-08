@@ -1,9 +1,9 @@
-const { memberModel } = require("../models/_index");
+const { adminModel } = require("../models/_index");
 
 
 exports.addMember = async (reqBody = {}) => {
   try {
-    const member = new memberModel(reqBody);
+    const member = new adminModel(reqBody);
     await member.setHash(reqBody.password);
     return await member.save();
   } catch (error) {
@@ -14,11 +14,11 @@ exports.addMember = async (reqBody = {}) => {
 
 
 exports.findMemberWithFilters = async (filters = {}, projections = null, options = {}) => {
-  return await memberModel.findOne(filters, projections, options);
+  return await adminModel.findOne(filters, projections, options);
 };
 
 exports.updateMemberWithFilters = async (filters = {}, updateQuery = {}, options = {}) => {
-  return await memberModel.findOneAndUpdate(filters, updateQuery, options);
+  return await adminModel.findOneAndUpdate(filters, updateQuery, options);
 };
 
 exports.getEmployees = async (options = {}) => {
@@ -106,7 +106,7 @@ exports.getEmployees = async (options = {}) => {
       }
     }
   );
-  return await memberModel.aggregate(pipeline);
+  return await adminModel.aggregate(pipeline);
 };
 
 
@@ -157,7 +157,7 @@ exports.getSubAdmins = async (options = {}) => {
       }
     }
   );
-  return await memberModel.aggregate(pipeline);
+  return await adminModel.aggregate(pipeline);
 };
 
 
@@ -253,7 +253,7 @@ exports.getTelecallers = async (options) => {
       }
     }
   );
-  return await memberModel.aggregate(pipeline);
+  return await adminModel.aggregate(pipeline);
 };
 
 
@@ -343,16 +343,16 @@ exports.getLeadManagers = async (options) => {
       }
     }
   );
-  return await memberModel.aggregate(pipeline);
+  return await adminModel.aggregate(pipeline);
 };
 
 
 exports.getLeadManagerList = async () => {
-  return await memberModel.find({ "role.name": { $in: ["LEAD_MANAGER"] }, isBlocked: false }, { fullname: 1, email: 1, _id: 1 }).sort({ fullname: 1 });
+  return await adminModel.find({ "role.name": { $in: ["LEAD_MANAGER"] }, isBlocked: false }, { fullname: 1, email: 1, _id: 1 }).sort({ fullname: 1 });
 };
 
 exports.getLeadManagerForFilter = async () => {
-  return await memberModel.find({ "role.name": { $in: ["LEAD_MANAGER"] } }, { fullname: 1, email: 1, _id: 1 }).sort({ fullname: 1 });
+  return await adminModel.find({ "role.name": { $in: ["LEAD_MANAGER"] } }, { fullname: 1, email: 1, _id: 1 }).sort({ fullname: 1 });
 };
 
 
@@ -388,5 +388,5 @@ exports.getTelecallerForFilter = async (options) => {
       }
     }
   );
-  return await memberModel.aggregate(pipeline);
+  return await adminModel.aggregate(pipeline);
 };

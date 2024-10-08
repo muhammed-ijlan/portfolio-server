@@ -3,17 +3,7 @@ const Schema = mongoose.Schema;
 const argon2 = require("argon2");
 
 
-const accessListSchema = new Schema(
-    {
-
-    },
-    {
-        _id: false
-    }
-);
-
-
-const memberSchema = new Schema(
+const adminSchema = new Schema(
     {
         fullname: {
             type: String,
@@ -36,8 +26,7 @@ const memberSchema = new Schema(
         accType: {
             type: String,
             required: true,
-            enum: ["SUPER_ADMIN", "SUB_ADMIN", "TELE_CALLER", "ENQUIRY_MANAGER"],
-            default: "SUB_ADMIN",
+            default: "ADMIN",
             index: true,
         },
         isBlocked: {
@@ -51,7 +40,6 @@ const memberSchema = new Schema(
         token: {
             type: String
         },
-        accessList: accessListSchema
     },
     {
         timestamps: true
@@ -59,7 +47,7 @@ const memberSchema = new Schema(
 );
 
 
-memberSchema.methods.setHash = async function (password) {
+adminSchema.methods.setHash = async function (password) {
     try {
         this.hash = await argon2.hash(password);
     } catch (error) {
@@ -67,7 +55,7 @@ memberSchema.methods.setHash = async function (password) {
     }
 };
 
-memberSchema.methods.verifyHash = async function (password) {
+adminSchema.methods.verifyHash = async function (password) {
     try {
         return await argon2.verify(this.hash, password);
     } catch (error) {
@@ -75,8 +63,8 @@ memberSchema.methods.verifyHash = async function (password) {
     }
 };
 
-const memberModel = mongoose.model("members", memberSchema);
+const adminModel = mongoose.model("admin", adminSchema);
 
 module.exports = {
-    memberModel,
+    adminModel,
 };

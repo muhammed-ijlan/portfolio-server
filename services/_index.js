@@ -1,9 +1,8 @@
 // const spaceService = require("./spaceService");
-const memberService = require("./memberService");
+const adminService = require("./adminService");
 const authService = require("./authService");
 const jwtService = require("./jwtService");
 const configurationService = require("./configurationService");
-const employeeService = require("./employeeService");
 const enquiryService = require("./enquiryService");
 const jobQueueService = require("./jobQueueService");
 const multerService = require("./multerService");
@@ -17,11 +16,10 @@ const enquiryCategoryService = require("./enquiryCategoryService");
 
 module.exports = {
   // spaceService,
-  memberService,
+  adminService,
   authService,
   jwtService,
   configurationService,
-  employeeService,
   enquiryService,
   jobQueueService,
   multerService,

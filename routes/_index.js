@@ -1,10 +1,9 @@
 module.exports = (app) => {
   app.use("/", require("./welcomeRouter"));
   app.use("/test", require("./testRouter"));
-  app.use("/member", require("./memberRouter"));
+  app.use("/admin", require("./adminRouter"));
   app.use("/auth", require("./authRouter"));
   // app.use("/configuration", require("./configurationRouter"));
-  app.use("/employee", require("./employeeRouter"));
   app.use("/enquiry", require("./enquiryRouter"));
   app.use("/queue", require("./jobQueueRouter"));
   app.use("/download", require("./fileDownloadRouter"));

@@ -1,5 +1,4 @@
-const { memberModel } = require("./memberModel");
-const { employeeModel } = require("./employeeModel");
+const { adminModel } = require("./adminModel");
 const { configurationModel } = require("./configurationModel");
 const { enquiryModel } = require("./enquiryModel");
 const { jobQueueModel } = require("./jobQueueModel");
@@ -12,8 +11,7 @@ const { enquiryStatusModel } = require("./enquiryStatusModel")
 const { enquiryCategoryModel } = require("./enquiryCategoryModel")
 
 module.exports = {
-  memberModel,
-  employeeModel,
+  adminModel,
   configurationModel,
   enquiryModel,
   jobQueueModel,

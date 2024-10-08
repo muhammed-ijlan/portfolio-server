@@ -4,29 +4,31 @@ const utils = require("../utils/_index");
 
 async function verifySuperAdmin(req, res, next) {
   try {
-    let token = await services.jwtService.getAuthTokenFromHeader(req);
-    if (token) {
-      let decoded = await services.jwtService.verifyAdminToken(token, true);
-      if (decoded && decoded.id) {
-        let id = mongoose.Types.ObjectId(decoded.id);
-        let admin = await services.authService.findAdminWithFilters(
-          {
-            token: token,
-            _id: id,
-            accType:"SUPER_ADMIN"
-          },
-          "_id accType",
-          { lean: true }
-        );
-        if (admin) {
-          req.admin = admin;
-          return next();
-        }
-      }
+    const token = await services.jwtService.getAuthTokenFromHeader(req);
+
+    if (!token) {
+      throw new utils.ErrorBody(401, "No token provided", []);
     }
-    throw new utils.ErrorBody(401, "Unauthorized", []);
+
+    const decoded = await services.jwtService.verifyAdminToken(token, true);
+    if (!decoded || !decoded.id) {
+      throw new utils.ErrorBody(401, "Invalid token", []);
+    }
+
+    const admin = await services.authService.findAdminWithFilters(
+      { _id: mongoose.Types.ObjectId(decoded.id), token: token },
+      "_id",
+      { lean: true }
+    );
+
+    if (!admin) {
+      throw new utils.ErrorBody(401, "Admin not found or token mismatch", []);
+    }
+
+    req.admin = admin;
+    next();
   } catch (error) {
-    console.log(error);
+    console.error(error.message);
     next(new utils.ErrorBody(401, "Unauthorized", []));
   }
 }

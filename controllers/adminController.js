@@ -2,7 +2,7 @@ const { ErrorBody, ResponseBody, responseHandler } = require("../utils/_index");
 const mongoose = require("mongoose");
 const { validationResult } = require("express-validator");
 const moment = require("moment");
-const { memberService, authService } = require("../services/_index");
+const { adminService, authService } = require("../services/_index");
 const path = require("path");
 const fs = require("fs");
 
@@ -15,11 +15,11 @@ exports.addEmployee = async (req, res, next) => {
       throw new ErrorBody(400, "Bad Inputs", errors.array());
     }
     let reqBody = req.body;
-    if (await memberService.findMemberWithFilters({ email: reqBody.email }, "_id", { lean: true })) {
+    if (await adminService.findMemberWithFilters({ email: reqBody.email }, "_id", { lean: true })) {
       const responseBody = new ResponseBody("Email already Exists", true, {});
       return responseHandler(res, next, responseBody, 200);
     }
-    await memberService.addMember(reqBody);
+    await adminService.addMember(reqBody);
     const responseBody = new ResponseBody("Employee Successfully added", false, {});
     responseHandler(res, next, responseBody, 201);
   } catch (error) {
@@ -35,12 +35,12 @@ exports.addSubAdmin = async (req, res, next) => {
       throw new ErrorBody(400, "Bad Inputs", errors.array());
     }
     let reqBody = req.body;
-    if (await memberService.findMemberWithFilters({ email: reqBody.email }, "_id", { lean: true })) {
+    if (await adminService.findMemberWithFilters({ email: reqBody.email }, "_id", { lean: true })) {
       const responseBody = new ResponseBody("Email already Exists", true, {});
       return responseHandler(res, next, responseBody, 200);
     }
     reqBody['accType'] = 'SUB_ADMIN';
-    await memberService.addMember(reqBody);
+    await adminService.addMember(reqBody);
     const responseBody = new ResponseBody("Sub-Admin Successfully added", false, {});
     responseHandler(res, next, responseBody, 201);
   } catch (error) {
@@ -51,30 +51,33 @@ exports.addSubAdmin = async (req, res, next) => {
 
 exports.getMember = async (req, res, next) => {
   try {
-    let errors = validationResult(req);
+    const errors = validationResult(req);
     if (!errors.isEmpty()) {
       throw new ErrorBody(400, "Bad Inputs", errors.array());
     }
-    let { _id, accType } = req.authAccount;
-    let { id } = req.query;
-    let filters = {
-      _id: mongoose.Types.ObjectId(id)
-    };
-    if (accType == "TELE_CALLER" || accType == "ENQUIRY_MANAGER") {
-      filters._id = _id;
-    }
-    const member = await memberService.findMemberWithFilters(filters, "_id fullname email accType role isBlocked profilePic accessList createdAt updatedAt", { lean: true });
+
+    const { _id } = req.admin;
+    const filters = { _id: mongoose.Types.ObjectId(_id) };
+
+    const member = await adminService.findMemberWithFilters(
+      filters,
+      "_id fullname email accType role isBlocked profilePic accessList createdAt updatedAt",
+      { lean: true }
+    );
+
     if (!member) {
-      const responseBody = new ResponseBody("Account doesn't exists", true, {});
+      const responseBody = new ResponseBody("Account doesn't exist", true, {});
       return responseHandler(res, next, responseBody, 200);
     }
-    const responseBody = new ResponseBody("member Successfully retrieved", false, { ...member });
+
+    const responseBody = new ResponseBody("Member successfully retrieved", false, member);
     responseHandler(res, next, responseBody, 200);
   } catch (error) {
-    console.log(error);
-    next([400, 401, 403].includes(error.status) ? error : {});
+    console.error(error);
+    next([400, 401, 403].includes(error.status) ? error : new ErrorBody(500, "Server error", []));
   }
 };
+
 
 exports.memberStatusChange = async (req, res, next) => {
   try {
@@ -83,7 +86,7 @@ exports.memberStatusChange = async (req, res, next) => {
       throw new ErrorBody(400, "Bad Inputs", errors.array());
     }
     let { isBlocked, id } = req.body;
-    const member = await memberService.updateMemberWithFilters({ _id: mongoose.Types.ObjectId(id) }, { isBlocked: isBlocked }, { new: true });
+    const member = await adminService.updateMemberWithFilters({ _id: mongoose.Types.ObjectId(id) }, { isBlocked: isBlocked }, { new: true });
     if (member.isBlocked) {
       await authService.logoutMember(id);
     }
@@ -108,7 +111,7 @@ exports.getEmployees = async (req, res, next) => {
     fullname = fullname ? fullname.replace(/\s+/g, " ").split(" ").join(".*") : null;
     isBlocked = isBlocked === "true" ? true : (isBlocked === "false" ? false : null);
     let options = { page, size, fullname, isBlocked, id, role, email };
-    const result = await memberService.getEmployees(options);
+    const result = await adminService.getEmployees(options);
     let responsePayload = {
       maxRecords: 0,
       records: []
@@ -136,7 +139,7 @@ exports.getSubadmins = async (req, res, next) => {
     page = page ? parseInt(page) : 0;
     size = size ? parseInt(size) : 10;
     let options = { page, size };
-    const result = await memberService.getSubAdmins(options);
+    const result = await adminService.getSubAdmins(options);
     let responsePayload = {
       maxRecords: 0,
       records: []
@@ -160,7 +163,7 @@ exports.updateEmployee = async (req, res, next) => {
       throw new ErrorBody(400, "Bad Inputs", errors.array());
     }
     let { id, fullname, email, password } = req.body;
-    const employee = await memberService.findMemberWithFilters({ _id: id, accType: "ENQUIRY_MANAGER" || "TELE_CALLER" }, "", {});
+    const employee = await adminService.findMemberWithFilters({ _id: id, accType: "ENQUIRY_MANAGER" || "TELE_CALLER" }, "", {});
     if (!employee) {
       const responseBody = new ResponseBody("Employee doesnt Exists", true, {});
       return responseHandler(res, next, responseBody, 200);
@@ -170,7 +173,7 @@ exports.updateEmployee = async (req, res, next) => {
     }
     if (email) {
       if (employee.email != email) {
-        if (await memberService.findMemberWithFilters({ email: email }, "_id", {})) {
+        if (await adminService.findMemberWithFilters({ email: email }, "_id", {})) {
           const responseBody = new ResponseBody("Email already Exists", true, {});
           return responseHandler(res, next, responseBody, 200);
         }
@@ -211,7 +214,7 @@ exports.updateSubadmin = async (req, res, next) => {
       throw new ErrorBody(400, "Bad Inputs", errors.array());
     }
     let { id, fullname, email, password } = req.body;
-    const subAdmin = await memberService.findMemberWithFilters({ _id: id, accType: "SUB_ADMIN" }, "", {});
+    const subAdmin = await adminService.findMemberWithFilters({ _id: id, accType: "SUB_ADMIN" }, "", {});
     if (!subAdmin) {
       const responseBody = new ResponseBody("Sub-Admin doesnt Exists", true, {});
       return responseHandler(res, next, responseBody, 200);
@@ -221,7 +224,7 @@ exports.updateSubadmin = async (req, res, next) => {
     }
     if (email) {
       if (subAdmin.email != email) {
-        if (await memberService.findMemberWithFilters({ email: email }, "_id", {})) {
+        if (await adminService.findMemberWithFilters({ email: email }, "_id", {})) {
           const responseBody = new ResponseBody("Email already Exists", true, {});
           return responseHandler(res, next, responseBody, 200);
         }
@@ -261,18 +264,18 @@ exports.updateMemberProfile = async (req, res, next) => {
       throw new ErrorBody(400, "Bad Inputs", errors.array());
     }
     let { fullname, email, password } = req.body;
-    const { _id, accType } = req.authAccount;
-    const member = await memberService.findMemberWithFilters({ _id: _id }, "", {});
+    const { _id, accType } = req.admin;
+    const member = await adminService.findMemberWithFilters({ _id: _id }, "", {});
     if (!member) {
       const responseBody = new ResponseBody("member doesnt Exists", true, {});
       return responseHandler(res, next, responseBody, 200);
     }
-    if (fullname && accType !== "ENQUIRY_MANAGER" || accType !== "TELE_CALLER") {
+    if (fullname) {
       member.fullname = fullname;
     }
-    if (email && accType !== "ENQUIRY_MANAGER" || accType !== "TELE_CALLER") {
+    if (email) {
       if (member.email != email) {
-        if (await memberService.findMemberWithFilters({ email: email }, "_id", {})) {
+        if (await adminService.findMemberWithFilters({ email: email }, "_id", {})) {
           const responseBody = new ResponseBody("Email already Exists", true, {});
           return responseHandler(res, next, responseBody, 200);
         }
@@ -314,8 +317,8 @@ exports.updateMember = async (req, res, next) => {
       throw new ErrorBody(400, "Bad Inputs", errors.array());
     }
     let { password } = req.body;
-    let { _id } = req.authAccount;
-    const member = await memberService.findMemberWithFilters({ _id: _id }, "", {});
+    let { _id } = req.admin;
+    const member = await adminService.findMemberWithFilters({ _id: _id }, "", {});
     if (!member) {
       throw new ErrorBody();
     }
