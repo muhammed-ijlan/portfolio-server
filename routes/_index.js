@@ -15,4 +15,7 @@ module.exports = (app) => {
   app.use("/enquiry-status", require("./enquiryStatusRouter"));
   app.use("/enquiry-category", require("./enquiryCategoryRouter"));
 
+  app.use("/project", require("./projectRouter"));
+
+
 };

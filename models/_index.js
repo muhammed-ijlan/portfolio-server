@@ -10,6 +10,8 @@ const { enquirySourceModel } = require("./enquirySourceModel")
 const { enquiryStatusModel } = require("./enquiryStatusModel")
 const { enquiryCategoryModel } = require("./enquiryCategoryModel")
 
+const { projectModel } = require("./projectModel")
+
 module.exports = {
   adminModel,
   configurationModel,
@@ -22,5 +24,8 @@ module.exports = {
   enquirySourceModel,
   enquiryStatusModel,
   enquiryCategoryModel,
+
+  projectModel,
+
 
 };

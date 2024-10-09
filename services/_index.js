@@ -14,6 +14,8 @@ const enquirySourceService = require("./enquirySourceService");
 const enquiryStatusService = require("./enquiryStatusService");
 const enquiryCategoryService = require("./enquiryCategoryService");
 
+const projectService = require("./projectService");
+
 module.exports = {
   // spaceService,
   adminService,
@@ -29,5 +31,8 @@ module.exports = {
   newsPostService,
   enquirySourceService,
   enquiryStatusService,
-  enquiryCategoryService
+  enquiryCategoryService,
+
+  projectService,
+
 };

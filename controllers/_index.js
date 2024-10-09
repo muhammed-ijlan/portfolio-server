@@ -11,6 +11,8 @@ const enquirySourceController = require("./enquirySourceController")
 const enquiryStatusController = require("./enquiryStatusController");
 const enquiryCategoryController = require("./enquiryCategoryController");
 
+const projectController = require("./projectController");
+
 module.exports = {
   adminController,
   authController,
@@ -24,4 +26,7 @@ module.exports = {
   enquirySourceController,
   enquiryStatusController,
   enquiryCategoryController,
+
+  projectController,
+
 };

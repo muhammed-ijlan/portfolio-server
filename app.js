@@ -19,7 +19,7 @@ mogoDBConection.connect();
 
 //Cors
 const corsOptions = {
-  origin: [process.env.USER_APP_URL, process.env.ADMIN_APP_URL,process.env.USER_APP_URL_WWW]
+  origin: [process.env.USER_APP_URL, process.env.ADMIN_APP_URL, process.env.USER_APP_URL_WWW]
 }
 app.use(cors(corsOptions));
 
@@ -27,6 +27,9 @@ app.use(cors(corsOptions));
 //body parser
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+// app.use('/public', express.static(path.join(__dirname, 'public')));
+
 
 
 //user agent
@@ -37,7 +40,9 @@ app.use(function (req, res, next) {
 
 
 //Static public File access
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('/public', express.static(path.join(__dirname, 'public')));
+
+
 
 
 // Routing happens here
