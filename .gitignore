@@ -16,3 +16,4 @@ public/newsPostImages/*
 !public/blogPostImages/.gitkeep
 
 !public/newsPostImages/.gitkeep
+.vercel
