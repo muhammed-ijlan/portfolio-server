@@ -17,22 +17,15 @@ const app = express();
 mogoDBConection.connect();
 
 const corsOptions = {
-  origin: (origin, callback) => {
-    const whitelist = [process.env.USER_APP_URL, process.env.ADMIN_APP_URL, process.env.USER_APP_URL_WWW];
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
+  origin: '*', // Allow all origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Specify methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Specify headers
+  credentials: true, // Set to false if you don't need credentials (cookies, auth headers)
 };
 
 app.use(cors(corsOptions));
 
-// Handle preflight requests for all routes
+// Handle preflight requests explicitly (if necessary)
 app.options('*', cors(corsOptions));
 
 
