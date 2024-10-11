@@ -16,19 +16,25 @@ const app = express();
 // Configure mongo connection
 mogoDBConection.connect();
 
-
-//Cors
 const corsOptions = {
-  origin: [process.env.USER_APP_URL, process.env.ADMIN_APP_URL, process.env.USER_APP_URL_WWW],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Ensure OPTIONS is allowed
-  allowedHeaders: ['Content-Type', 'Authorization'], // Ensure headers needed for your requests are allowed
-  credentials: true, // If you're using cookies or authentication
+  origin: (origin, callback) => {
+    const whitelist = [process.env.USER_APP_URL, process.env.ADMIN_APP_URL, process.env.USER_APP_URL_WWW];
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
 
-// Handle preflight requests explicitly
-app.options('*', cors(corsOptions)); // Pre-flight requests for all routes
+// Handle preflight requests for all routes
+app.options('*', cors(corsOptions));
+
 
 
 //body parser
