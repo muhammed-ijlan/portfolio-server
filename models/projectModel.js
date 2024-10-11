@@ -6,7 +6,6 @@ const projectSchema = new Schema(
         projectName: {
             type: String,
             required: true,
-            lowercase: true,
             index: true,
             trim: true
         },

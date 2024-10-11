@@ -5,6 +5,7 @@ const responseHandler = require("../utils/responseHandler");
 const path = require('path');
 const fs = require("fs");
 const { ErrorBody } = require("../utils/ErrorBody");
+const { cloudinary } = require('../configs/cloudinaryConfig');
 
 exports.addProject = async (req, res, next) => {
     try {
@@ -17,9 +18,24 @@ exports.addProject = async (req, res, next) => {
         let files = req.files;
 
         if (files && files.length > 0) {
-            reqBody["images"] = files.map((item) => {
-                return "/public/" + item.filename;
+            let uploadPromises = files.map((file) => {
+                return new Promise((resolve, reject) => {
+                    const stream = cloudinary.uploader.upload_stream(
+                        { folder: 'projects' },
+                        (error, result) => {
+                            if (error) {
+                                reject(error);
+                            } else {
+                                resolve(result.secure_url);
+                            }
+                        }
+                    );
+                    stream.end(file.buffer);
+                });
             });
+
+            const imageUrls = await Promise.all(uploadPromises);
+            reqBody["images"] = imageUrls;
         }
 
         await projectService.createNewProject(reqBody);
@@ -83,38 +99,60 @@ exports.updateProject = async (req, res, next) => {
     try {
         let errors = validationResult(req);
         if (!errors.isEmpty()) {
-            throw new ErrorBody(400, "Bad Inputs", errors.array())
+            throw new ErrorBody(400, "Bad Inputs", errors.array());
         }
+
         let reqBody = req.body;
         let projectId = reqBody.projectId;
         let files = req.files;
         let filter = { _id: projectId };
+
         let project = await projectService.getOneProject(filter);
         if (!project) {
             throw new ErrorBody(400, "Project Not found", []);
         }
-        if (files.length) {
-            reqBody["images"] = files.map((item) => {
-                return "/public/" + item.filename;
 
+        // Handle file upload to Cloudinary
+        if (files && files.length > 0) {
+            // Upload new files to Cloudinary
+            let uploadPromises = files.map((file) => {
+                return new Promise((resolve, reject) => {
+                    const stream = cloudinary.uploader.upload_stream(
+                        { folder: 'projects' }, // Specify the folder in Cloudinary
+                        (error, result) => {
+                            if (error) {
+                                reject(error);
+                            } else {
+                                resolve(result.secure_url); // Cloudinary URL
+                            }
+                        }
+                    );
+                    stream.end(file.buffer); // Upload the file buffer
+                });
             });
-            const deleteprojectImages = async (images) => {
-                for (const imagePath of images) {
-                    const fileName = imagePath.substring(imagePath.lastIndexOf("/") + 1);
-                    const fullPath = path.join(__dirname, `../public/${fileName}`);
 
+            const imageUrls = await Promise.all(uploadPromises);
+            reqBody["images"] = imageUrls;
+
+            // Delete the old images from Cloudinary
+            const deleteCloudinaryImages = async (images) => {
+                for (const imageUrl of images) {
+                    // Extract the public_id of the image to delete it from Cloudinary
+                    const publicId = imageUrl.split('/').pop().split('.')[0]; // Extract public_id from the URL
                     try {
-                        await fs.promises.unlink(fullPath);
-                        console.log(`Successfully deleted: ${fullPath}`);
+                        await cloudinary.uploader.destroy(`projects/${publicId}`);
+                        console.log(`Successfully deleted Cloudinary image: ${publicId}`);
                     } catch (error) {
-                        console.error(`Error deleting file: ${fullPath}\n`, error);
+                        console.error(`Error deleting Cloudinary image: ${publicId}\n`, error);
                     }
                 }
             };
-            if (project.images.length) {
-                deleteprojectImages(project.images);
+
+            if (project.images && project.images.length > 0) {
+                await deleteCloudinaryImages(project.images);
             }
         }
+
         if (reqBody.projectName) {
             project.projectName = reqBody.projectName;
         }
@@ -128,6 +166,7 @@ exports.updateProject = async (req, res, next) => {
         } else if (isPopular && isPopular === "false") {
             project.isPopular = false;
         }
+
         let isBlocked = reqBody.isBlocked || null;
         if (isBlocked && isBlocked === "true") {
             project.isBlocked = true;
@@ -135,10 +174,10 @@ exports.updateProject = async (req, res, next) => {
             project.isBlocked = false;
         }
 
-
         if (reqBody.images) {
-            project.images = reqBody.images;
+            project.images = reqBody.images; // Update with new image URLs
         }
+
         await project.save();
         const response = new ResponseBody("Successfully updated the project", false, {});
         responseHandler(res, next, response, 200);

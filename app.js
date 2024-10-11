@@ -19,9 +19,16 @@ mogoDBConection.connect();
 
 //Cors
 const corsOptions = {
-  origin: [process.env.USER_APP_URL, process.env.ADMIN_APP_URL, process.env.USER_APP_URL_WWW]
-}
+  origin: [process.env.USER_APP_URL, process.env.ADMIN_APP_URL, process.env.USER_APP_URL_WWW],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Ensure OPTIONS is allowed
+  allowedHeaders: ['Content-Type', 'Authorization'], // Ensure headers needed for your requests are allowed
+  credentials: true, // If you're using cookies or authentication
+};
+
 app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions)); // Pre-flight requests for all routes
 
 
 //body parser

@@ -1,4 +1,4 @@
-const multer = require("multer");
+// const multer = require("multer");
 const fs = require('fs');
 const path = require('path');
 
@@ -44,27 +44,37 @@ exports.multerNewsPostImageUpload = () => {
     return multerDiskUpload;
 }
 
+// exports.multerImageUpload = () => {
+//     const storage = multer.diskStorage({
+//         destination: function (req, file, cb) {
+//             const dir = path.resolve(__dirname, '..', 'public');
+
+//             if (!fs.existsSync(dir)) {
+//                 fs.mkdirSync(dir, { recursive: true });
+//             }
+
+//             cb(null, dir);
+//         },
+//         filename: function (req, file, cb) {
+//             let filename = Date.now() + '-' + file.originalname;
+//             cb(null, filename);
+//         }
+//     });
+
+//     return multer({
+//         storage: storage,
+//         limits: { fileSize: 20 * 1024 * 1024 }
+//     });
+// };
+
+
+const multer = require('multer');
+
 exports.multerImageUpload = () => {
-    const storage = multer.diskStorage({
-        destination: function (req, file, cb) {
-            const dir = path.resolve(__dirname, '..', 'public');
-
-            if (!fs.existsSync(dir)) {
-                fs.mkdirSync(dir, { recursive: true });
-            }
-
-            cb(null, dir);
-        },
-        filename: function (req, file, cb) {
-            let filename = Date.now() + '-' + file.originalname;
-            cb(null, filename);
-        }
-    });
+    const storage = multer.memoryStorage();
 
     return multer({
         storage: storage,
-        limits: { fileSize: 20 * 1024 * 1024 }
+        limits: { fileSize: 20 * 1024 * 1024 } // 20MB file size limit
     });
 };
-
-
